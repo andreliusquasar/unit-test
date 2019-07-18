@@ -1,31 +1,56 @@
-import { TestBed, async } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
 import { AppComponent } from './app.component';
+import { ClientesService } from './clientes.service';
+
+let fixture: ComponentFixture<AppComponent>;
+let component: AppComponent;
+
+export interface TestData {
+  id: string;
+  nome: string;
+}
 
 describe('AppComponent', () => {
+
+  const dataStub = [
+    {
+      'id': 1,
+      'nome': 'Hambúrgueres'
+    },
+    {
+      'id': 2,
+      'nome': 'Refrigerantes'
+    }
+  ];
+
+  const userService = jasmine.createSpy('ClientesService');
+
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [
-        AppComponent
-      ],
-    }).compileComponents();
+      declarations: [ AppComponent ]
+    })
+    .overrideComponent( AppComponent, {
+      set: {
+        providers: [
+          {provide: ClientesService, useValue: userService}
+        ]
+      }
+    })
+    .compileComponents()
+    .then(() => {
+      fixture = TestBed.createComponent(AppComponent);
+      component = fixture.componentInstance;
+    });
   }));
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.debugElement.componentInstance;
-    expect(app).toBeTruthy();
-  });
+  it('FAKE ASYNC', fakeAsync(() => {
+    const service = new ClientesService(undefined);
+    spyOn(service, 'getProduto').and.returnValue(of(dataStub));
+    service.getProduto().subscribe(res => {
+      console.log('=====================', res);
+      expect(res).toEqual(dataStub);
+    });
+  }));
 
-  it(`should have as title 'teste-unitario-fast-shop'`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.debugElement.componentInstance;
-    expect(app.title).toEqual('teste-unitario-fast-shop');
-  });
-
-  it('should render title in a h1 tag', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.debugElement.nativeElement;
-    expect(compiled.querySelector('h1').textContent).toContain('Welcome to teste-unitario-fast-shop!');
-  });
 });
